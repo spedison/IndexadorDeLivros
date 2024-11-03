@@ -1,64 +1,65 @@
 package br.com.spedison;
 
+import br.com.spedison.comandos.*;
 import br.com.spedison.processadores.Conexoes;
-import br.com.spedison.processadores.ProcessaPaginas;
-import br.com.spedison.processadores.ProcessaPalavras;
-import br.com.spedison.processadores.ProcessaParagrafos;
-import br.com.spedison.vo.Livro;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
+import java.util.List;
 
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
 
 
-    void processaUmLivro(String nomeArquivoPDF) {
-
-        Conexoes conexoes = new Conexoes();
-
-        ProcessaPaginas processadorPaginas = new ProcessaPaginas(conexoes);
-        processadorPaginas.processaArquivo(nomeArquivoPDF);
-
-        ProcessaParagrafos processadorParagrafos = new ProcessaParagrafos(
-                processadorPaginas.getLivroAtual(),
-                conexoes);
-        processadorParagrafos.processaParagrafos();
-
-
-        ProcessaPalavras processadorPalavras = new ProcessaPalavras(
-                processadorPaginas.getLivroAtual(),
-                conexoes);
-        processadorPalavras.processaPalavras();
-
-        conexoes.terminaConexao();
-
-        System.out.println(Instant.now() + " - Terminando o processamento do livro : " + nomeArquivoPDF);
-
-    }
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
 
-        File file = new File("/mnt/dados/git/IndexaLivros/livros_para_indexar/");
-        File[] files = file.listFiles();
+        logger.info("Criando todas os comandos.");
 
-        Main main = new Main();
+        List<ComandoInterface> comandos =
+                List.of(
+                        new ComandoIndexar(),
+                        new ComandoApagarTodosLivros(),
+                        new ComandoApagarUmLivro(),
+                        new ComandoPessoaFake(),
+                        new ComandoBuscaLivroComLike(),
+                        new ComandoBuscaLivroTextualMariaDB()
+                );
 
-        Consumer<String> peekMessage = (nomeArquivo) -> {
-            System.out.println("Processando Arquivo " + nomeArquivo);
-        };
+        if (args.length == 0){
+            mostraHelp(comandos);
+            return;
+        }
 
-        Arrays.stream(files)
-                .map(File::toString)
-                .parallel()
-                .peek(peekMessage)
-                .forEach(main::processaUmLivro);
+        logger.info("Executando o comando");
+        comandos
+                .stream()
+                .filter(c -> c.aceitoComando(args))
+                .limit(1)
+                .forEach(c -> c.execute(args));
+
+        Conexoes.terminaConexoes();
+    }
+
+    private static void mostraHelp(List<ComandoInterface> comandos) {
+        final StringBuffer _out = new StringBuffer();
+
+        _out.append("""
+                Lista de comandos possiveis para trabalhar com o indexador de livos:
+                
+                """);
+        comandos
+                .stream()
+                .map(c -> c.showHelp(new StringBuffer()).toString())
+                .map(s->s+"\n")
+                .forEach(_out::append);
+
+        _out.append("""
+                
+                Feito por @spedison 11/2024
+                """);
+
+        System.out.println(_out.toString());
     }
 }

@@ -23,9 +23,10 @@ public class Pagina {
 
     private int numeroPagina;
 
+    @Lob
     @Column(columnDefinition = "TEXT")
     private String conteudo;
 
-    @OneToMany(mappedBy = "pagina")
+    @OneToMany(mappedBy = "pagina", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Paragrafo> paragrafos;
 }

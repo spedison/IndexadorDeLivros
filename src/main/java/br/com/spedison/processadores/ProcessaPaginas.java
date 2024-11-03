@@ -1,11 +1,9 @@
 package br.com.spedison.processadores;
 
 import br.com.spedison.util.LePDF;
+import br.com.spedison.util.StringUtils;
 import br.com.spedison.vo.Livro;
 import br.com.spedison.vo.Pagina;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 import java.util.function.Consumer;
 
@@ -14,52 +12,80 @@ public class ProcessaPaginas implements Consumer<LePDF.PaginaLida> {
     private final Conexoes conexoes;
     int contaPaginas;
 
-    Livro livroAtual;
+    Livro livro;
     int commitBook = 50;
 
-    public ProcessaPaginas(Conexoes conexoes) {
+    public ProcessaPaginas(Conexoes conexoes, Livro livro) {
+        this.livro = livro;
         this.conexoes = conexoes;
     }
 
-    public Livro getLivroAtual() {
-        return livroAtual;
-    }
-
-    public void processaArquivo (String nomeArquivoPDF) {
-        livroAtual = new Livro();
-        livroAtual.setNomeLivro(nomeArquivoPDF);
-        livroAtual.setPaginas(new java.util.ArrayList<>());
-
-        EntityManager entityManager = conexoes.getEntityManager();
-
-        entityManager.getTransaction().begin();
-        entityManager.persist(livroAtual);
-        entityManager.getTransaction().commit();
-
-        entityManager.getTransaction().begin();
+    public void processaArquivo(String nomeArquivoPDF) {
+        conexoes.beginTransaction();
         LePDF.lerPDF(nomeArquivoPDF, this);
-        entityManager.getTransaction().commit();
+        conexoes.commitTransaction();
     }
 
+    public void apagaPaginasDoLivro() {
+        conexoes.beginTransaction();
+        conexoes.getEntityManager().createQuery(
+                        """
+                                    delete from Pagina p
+                                    where p.livro = :livro
+                                """, Pagina.class)
+                .setParameter("livro", livro)
+                .executeUpdate();
+        conexoes.commitTransaction();
+    }
+
+
+    public String ajustaConteudoPagina(String conteudoPDF) {
+
+        // Quebra a página em linhas
+        String[] linhas = conteudoPDF.split("[\n]");
+
+        // Buffer de retorno
+        StringBuffer acumuladorDeLinhas = new StringBuffer();
+
+        // Tá vazio, retorna.
+        if (linhas.length == 0)
+            return conteudoPDF;
+
+        // O buffer atual vira a linha 1.
+        acumuladorDeLinhas.append(linhas[0].trim());
+
+        // Roda todas as linhas (pula a primeira)
+        for (int l = 1; l < linhas.length; l++) {
+
+            if (linhas[l].isBlank())
+                continue;
+
+            // Caso contrário tento unir as linhas
+            if (!StringUtils.uneLinhas(acumuladorDeLinhas.toString(),
+                    linhas[l], acumuladorDeLinhas)) {
+                // Se as linhas não tem um relacionamento (aparente) pode-se adicionar um enter e a linha atual.
+                acumuladorDeLinhas.append("\n").append(linhas[l].trim());
+            }
+        }
+        return acumuladorDeLinhas.toString();
+    }
 
     @Override
     public void accept(LePDF.PaginaLida paginaLida) {
 
         contaPaginas++;
         Pagina pagina = new Pagina();
-        pagina.setLivro(livroAtual);
+        pagina.setLivro(livro);
         pagina.setNumeroPagina(paginaLida.getNumeroPagina());
-        pagina.setConteudo(paginaLida.getConteudoPagina());
+        pagina.setConteudo(ajustaConteudoPagina(paginaLida.getConteudoPagina()));
 
-        EntityManager entityManager = conexoes.getEntityManager();
+        livro.getPaginas().add(pagina);
+        conexoes.grava(pagina);
 
-        livroAtual.getPaginas().add(pagina);
-        entityManager.persist(pagina);
-
+        // A cada x registros, é realizado um commit.
         if (contaPaginas % commitBook == 0) {
-            entityManager.getTransaction().commit();
-            entityManager.getTransaction().begin();
+            conexoes.commitTransaction();
+            conexoes.beginTransaction();
         }
     }
-
 }

@@ -4,14 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
 
 public class LePDF {
 
+    static final Logger log = LoggerFactory.getLogger(LePDF.class);
 
     @AllArgsConstructor
     @Data
@@ -35,7 +37,7 @@ public class LePDF {
                     numeroDePaginasLidas++;
                 }
             } else {
-                System.out.println("O documento está encriptado e não pode ser lido.");
+                log.error("O documento está encriptado e não pode ser lido.");
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -20,11 +20,15 @@ public class Paragrafo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // Define a coluna como auto-incremento
-    private Integer id_paragrafo;
+    @Column (name = "id_paragrafo")
+    private Integer idParagrafo;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String conteudo;
+
     private int posicaoParagrafo;
 
-    @OneToMany(mappedBy = "paragrafo")
+    @OneToMany(mappedBy = "paragrafo" , cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Palavra> palavras;
 }

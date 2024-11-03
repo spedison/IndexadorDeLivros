@@ -4,8 +4,6 @@ import br.com.spedison.vo.Livro;
 import br.com.spedison.vo.Pagina;
 import br.com.spedison.vo.Paragrafo;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 import java.util.List;
 
@@ -14,7 +12,7 @@ public class ProcessaParagrafos {
     Livro livro;
 
 
-    public ProcessaParagrafos(Livro livro, Conexoes conexoes) {
+    public ProcessaParagrafos(Conexoes conexoes,Livro livro) {
         this.livro = livro;
         this.conexoes = conexoes;
     }
@@ -52,5 +50,16 @@ public class ProcessaParagrafos {
             }
             entityManager.getTransaction().commit();
         }
+    }
+    public void apagaParagrafosDoLivro() {
+        conexoes.beginTransaction();
+        conexoes.getEntityManager().createQuery(
+                        """
+                                    delete from Paragrafo p
+                                    where p.pagina.livro = :livro
+                                """, Paragrafo.class)
+                .setParameter("livro", livro)
+                .executeUpdate();
+        conexoes.commitTransaction();
     }
 }

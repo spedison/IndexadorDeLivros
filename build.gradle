@@ -1,6 +1,25 @@
 plugins {
     id 'java'
     id 'application'
+    id 'org.graalvm.buildtools.native' version '0.10.3'
+}
+
+// Force use JDK 21 to use.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    modularity.inferModulePath.set(true)
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:deprecation"
+    options.compilerArgs << "-Xlint:unchecked"
+}
+
+// Compile with all options of JDK 21.
+compileJava {
+    options.release = 21
 }
 
 group = 'br.com.spedison'
@@ -11,20 +30,21 @@ repositories {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
-    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.5.0'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.0'
+
     implementation 'org.apache.pdfbox:pdfbox:2.0.29'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
+    implementation 'org.slf4j:jul-to-slf4j:2.0.9'
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+
     implementation 'org.hibernate.orm:hibernate-core:6.6.1.Final'
-    implementation 'jakarta.persistence:jakarta.persistence-api:2.2.3'
     implementation 'org.hibernate.common:hibernate-commons-annotations:6.0.6.Final'
+    implementation 'jakarta.persistence:jakarta.persistence-api:2.2.3'
     implementation 'com.zaxxer:HikariCP:5.0.1'
-    implementation 'org.slf4j:slf4j-api:2.0.7'
-    implementation 'org.slf4j:slf4j-simple:2.0.7' // Para um logger básico
-
-
-
+    implementation 'com.github.javafaker:javafaker:1.0.2'
 
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
@@ -41,5 +61,91 @@ test {
 }
 
 application {
-    mainClassName = 'br.com.spedison.Main'
+    mainClass.set("br.com.spedison.Main")  // No Kotlin, o setter usa a função set()
 }
+
+def libsDir = file(layout.buildDirectory.file("libs"))
+
+tasks.register('copyDependencies', Copy) {
+    dependsOn(build)
+    from configurations.runtimeClasspath
+    into libsDir
+}
+
+tasks.register('fatJar', Jar) {
+    dependsOn(compileJava)
+    archiveClassifier.set('fat')  // Nomeia o JAR como 'fat'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.main.output
+
+    // Inclui todas as dependências no JAR
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    manifest {
+        attributes(
+                'Main-Class': 'br.com.spedison.Main'
+        )
+    }
+
+    destinationDirectory.set(libsDir)
+}
+
+jar {
+
+    from sourceSets.main.output
+
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass,  // Substitua pelo nome completo da sua classe principal
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' ')
+        )
+    }
+    // Para fazer um FAT Jar.
+    //from {
+    //    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    // }
+}
+
+//build {
+//    dependsOn tasks.jar, tasks.copyDependencies
+//}
+
+//TODO: Acabar e deixar funcionando o GraalVM 100% operacional.
+graalvmNative {
+    binaries {
+        main {
+            imageName = "indexadorDeLivros"
+            mainClass = "br.com.spedison.Main"
+            buildArgs.add("-O4")
+        }
+        test {
+            buildArgs.add("-O0")
+        }
+    }
+    binaries.all {
+        buildArgs.add("--verbose")
+    }
+}
+
+tasks.register('unzipDist') {
+    dependsOn tasks.distZip
+    doLast {
+        def zipFile = layout.buildDirectory.file("distributions/${project.name}-${project.version}.zip").get().asFile
+        def outputDir = layout.buildDirectory.dir(".").get().asFile
+
+        copy {
+            from zipTree(zipFile)
+            into outputDir
+        }
+
+        println "Arquivo descompactado em: ${outputDir}"
+    }
+}
+
+tasks.register("defaultTask"){
+    dependsOn clean, copyDependencies
+}
+
+defaultTasks "defaultTask"

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <!-- Define o nível de log para o Hibernate -->
+    <Logger name="org.hibernate" level="WARN" additivity="false">
+        <AppenderRef ref="Console"/>
+    </Logger>
+
+    <Logger name="org.hibernate.jpa.internal.util.LogHelper" level="WARN" additivity="false">
+        <AppenderRef ref="Console"/>
+    </Logger>
+
+    <Logger name="org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl"
+            level="WARN" additivity="false">
+        <AppenderRef ref="Console"/>
+    </Logger>
+
+    <Logger name="org.hibernate.jpa.internal.util.LogHelper" level="WARN" additivity="false">
+        <AppenderRef ref="Console"/>
+    </Logger>
+
+    <Logger name="org.hibernate.Version" level="WARN" additivity="false">
+        <AppenderRef ref="Console"/>
+    </Logger>
+
+    <!-- Configuração do Root logger -->
+    <Root level="ERROR">
+        <AppenderRef ref="Console"/>
+    </Root>
+
+    <!-- Appender para console -->
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %c - %m%n"/>
+        </Console>
+    </Appenders>
+
+</Configuration>
