@@ -17,7 +17,7 @@ public class StringUtils {
         //System.out.println("Antes  : " + s);
         s = org.apache.commons.lang3.StringUtils.replaceChars(s, expr, repl);
         //System.out.println("Depois : " + s);
-        return s.split("[" + " \t" + "]");
+        return s.split("[ \t]+");
     }
 
     public static String removeAcentos(String texto) {

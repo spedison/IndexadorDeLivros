@@ -12,14 +12,14 @@ class ProcessaPaginasTest {
                 Aqui está um teste para
                 que eu seja :
                 "Um faz e o outro vê".
-                Aqui temos uma solução : 
+                Aqui temos uma solução :
                 Vamos tentar e ao tentar pode-
                 
                 mos avaliar a solução.
-                Ao solucionar temos uma saída, 
+                Ao solucionar temos uma saída,
                 
                 pois a saida é nunca mais parar.
-                Não pararemos, nunca, jamais, 
+                Não pararemos, nunca, jamais,
                 para que eles nunca saim imunes.
                 """;
 
@@ -31,6 +31,7 @@ class ProcessaPaginasTest {
                 Não pararemos, nunca, jamais, para que eles nunca saim imunes.""";
         String resultadoObtido = processaPaginas.ajustaConteudoPagina(paginaSimulada);
         assertEquals(resultadoEsperado, resultadoObtido);
+        assertTrue(true);
     }
 
 }

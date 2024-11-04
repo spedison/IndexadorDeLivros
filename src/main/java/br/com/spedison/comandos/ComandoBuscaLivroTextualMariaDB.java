@@ -4,7 +4,6 @@ import br.com.spedison.processadores.Conexoes;
 import br.com.spedison.util.SystemUtils;
 import br.com.spedison.vo.PaginaComLivro;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
 
     @Getter
     @AllArgsConstructor
-    private static enum ModoBusca {
+    private enum ModoBusca {
         TODOS("[sS]", ""),
         EXPANSAO("[eE]", "WITH QUERY EXPANSION"),
         BOOLEANO("[bB]", "IN BOOLEAN MODE");
@@ -84,7 +83,7 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
     }
 
     @Override
-    public StringBuffer showHelp(StringBuffer help) {
+    public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
                 Comando   : -busca-livro-textual-mariadb ou -bltmdb
                 Descrição : Busca livros com nome que contém as expressões do mariadb in boolean mode

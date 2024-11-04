@@ -24,7 +24,8 @@ public class Main {
                         new ComandoApagarUmLivro(),
                         new ComandoPessoaFake(),
                         new ComandoBuscaLivroComLike(),
-                        new ComandoBuscaLivroTextualMariaDB()
+                        new ComandoBuscaLivroTextualMariaDB(),
+                        new ComandoBuscaPalavrasComIndiceReverso()
                 );
 
         if (args.length == 0){
@@ -43,15 +44,14 @@ public class Main {
     }
 
     private static void mostraHelp(List<ComandoInterface> comandos) {
-        final StringBuffer _out = new StringBuffer();
-
+        final StringBuilder _out = new StringBuilder();
         _out.append("""
-                Lista de comandos possiveis para trabalhar com o indexador de livos:
+                Lista de comandos possíveis para trabalhar com o indexador de livos:
                 
                 """);
         comandos
                 .stream()
-                .map(c -> c.showHelp(new StringBuffer()).toString())
+                .map(c -> c.showHelp(new StringBuilder()).toString())
                 .map(s->s+"\n")
                 .forEach(_out::append);
 
@@ -60,6 +60,6 @@ public class Main {
                 Feito por @spedison 11/2024
                 """);
 
-        System.out.println(_out.toString());
+        System.out.println(_out);
     }
 }

@@ -8,7 +8,6 @@ import br.com.spedison.vo.Pagina;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 
 public class ComandoBuscaLivroComLike implements ComandoInterface {
@@ -49,21 +48,19 @@ public class ComandoBuscaLivroComLike implements ComandoInterface {
                     .limit(quantidadeRegistro)
                     .forEach(mostraPagina);
             long fim = System.currentTimeMillis();
-            System.out.println("Foram encontrados %d registros\nO tempo gasto para a consulta foi %d msec"
-                    .formatted(paginas.size(),
-                            fim - inicio));
+            System.out.printf("Foram encontrados %d registros\nO tempo gasto para a consulta foi %d msec\n", paginas.size(), fim - inicio);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public StringBuffer showHelp(StringBuffer help) {
+    public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
                 Comando   : -busca-livro-com-like ou -blcl
                 Descrição : Busca livros com nome que contém uma palavra-chave.
-                Argumentos: 
-                          Palavra-chave para busca e 
+                Argumentos:
+                          Palavra-chave para busca e
                           Quantidade de resultados desejados.
                 Exemplo   : java -jar %s -busca-livro-com-like "%%java%%classe%%" 10
                 """.formatted(SystemUtils.getJarUsado()));

@@ -37,7 +37,7 @@ public class ComandoApagarTodosLivros implements ComandoInterface{
     }
 
     @Override
-    public StringBuffer showHelp(StringBuffer help) {
+    public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
                 Comando   : -apagar-todos
                 Descrição : Apaga todos os livros da base de dados.

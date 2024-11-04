@@ -28,7 +28,7 @@ public class ComandoApagarUmLivro implements ComandoInterface {
     }
 
     @Override
-    public StringBuffer showHelp(StringBuffer help) {
+    public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
                 Comando   : -apagar-livro ou -al
                 Descrição : Apaga um livro da base de dados.

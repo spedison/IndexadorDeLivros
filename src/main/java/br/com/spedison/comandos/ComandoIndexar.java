@@ -1,6 +1,5 @@
 package br.com.spedison.comandos;
 
-import br.com.spedison.Main;
 import br.com.spedison.processadores.*;
 import br.com.spedison.util.SystemUtils;
 import br.com.spedison.vo.Livro;
@@ -11,6 +10,7 @@ import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ComandoIndexar implements ComandoInterface {
@@ -68,19 +68,19 @@ public class ComandoIndexar implements ComandoInterface {
             return a.toLowerCase().endsWith("pdf");
         });
 
-        Consumer<String> peekMessage = (nomeArquivo) -> {
-            log.info("Processando Arquivo " + nomeArquivo);
-        };
+        Consumer<String> peekMessage = (nomeArquivo) -> log.info("Processando Arquivo " + nomeArquivo);
 
-        Arrays.stream(files)
-                .map(File::toString)
-                .parallel()
-                .peek(peekMessage)
-                .forEach(this::processaUmLivro);
+        if (Objects.nonNull(files)) {
+            Arrays.stream(files)
+                    .map(File::toString)
+                    .parallel()
+                    .peek(peekMessage)
+                    .forEach(this::processaUmLivro);
+        }
     }
 
     @Override
-    public StringBuffer showHelp(StringBuffer help) {
+    public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
                 Comando   : -idx ou -indexar
                 Descrição : Indexa os livros do diretório fornecido.
