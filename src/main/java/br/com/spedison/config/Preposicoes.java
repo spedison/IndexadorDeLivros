@@ -44,4 +44,15 @@ public class Preposicoes extends LinkedList<String> {
         }
         return false;
     }
+
+    @Override
+    public boolean contains(Object str) {
+        if (str instanceof String s)
+            return super.contains(s.toLowerCase().trim());
+        return super.contains(str);
+    }
+
+    public boolean notContains(String str) {
+        return !this.contains(str);
+    }
 }

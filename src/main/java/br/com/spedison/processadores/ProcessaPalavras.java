@@ -8,13 +8,14 @@ import br.com.spedison.util.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 public class ProcessaPalavras {
+
     private Livro livroAtual;
     private Conexoes conexoes;
+    private static Preposicoes preposicoes = new Preposicoes();
 
     public ProcessaPalavras(Conexoes conexoes, Livro livroAtual) {
         this.livroAtual = livroAtual;
@@ -26,7 +27,7 @@ public class ProcessaPalavras {
         conexoes.beginTransaction();
         conexoes.getEntityManager().createQuery(
                         """
-                                    delete from Palavra p 
+                                    delete from Palavra p
                                     where p.paragrafo.pagina.livro.idLivro = :idLivro
                                 """)
                 .setParameter("idLivro", livro.getIdLivro())
@@ -35,19 +36,23 @@ public class ProcessaPalavras {
     }
 
     public void processaPalavras() {
-        Preposicoes preposicoes = new Preposicoes();
         // Se for preposição ele deve não se processado. Não deve estar na lista de preposições.
-        Predicate<String> filtroPreposicaoEStopWords = (str) -> preposicoes.indexOf(str.toLowerCase()) < 0;
+        Predicate<String> filtroPreposicaoEStopWords = preposicoes::notContains ;
 
         // Implementar aqui a leitura e extração de palavras a partir dos diversos parágrafos.
         List<Paragrafo> paragrafoList = conexoes
                 .getEntityManager()
                 .createQuery("""
-                                SELECT paragrafo FROM Livro livro
+                                SELECT
+                                    paragrafo
+                                FROM
+                                    Livro livro
                                 join livro.paginas pagina
                                 join pagina.paragrafos paragrafo
-                                where livro = :livro
-                                order by livro.idLivro, pagina.idPagina, paragrafo.idParagrafo""",
+                                where
+                                    livro = :livro
+                                order by
+                                    livro.idLivro, pagina.idPagina, paragrafo.idParagrafo""",
                 Paragrafo.class)
                 .setParameter("livro", livroAtual)
                 .getResultList();
@@ -62,9 +67,7 @@ public class ProcessaPalavras {
         int posicaoPalavraParagrafo = 1;
 
         for (Paragrafo p : paragrafoList) {
-
             String[] palavrasOriginais = StringUtils.toToken(p.getConteudo(), 2, filtroPreposicaoEStopWords);
-
             conexoes.beginTransaction();
             for (String palavra : palavrasOriginais) {
 

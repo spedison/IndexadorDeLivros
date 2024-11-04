@@ -47,7 +47,7 @@ public class ComandoPessoaFake implements ComandoInterface {
     }
 
     @Override
-    public StringBuffer showHelp(StringBuffer help) {
+    public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
                 Comando   : -pessoa-fake ou -pf
                 Descrição : Cria uma pessoa fictícia com nome, endereço e idade.
