@@ -13,9 +13,9 @@ import java.util.function.Predicate;
 
 public class ProcessaPalavras {
 
-    private Livro livroAtual;
-    private Conexoes conexoes;
-    private static Preposicoes preposicoes = new Preposicoes();
+    private final Livro livroAtual;
+    private final Conexoes conexoes;
+    private static final Preposicoes preposicoes = new Preposicoes();
 
     public ProcessaPalavras(Conexoes conexoes, Livro livroAtual) {
         this.livroAtual = livroAtual;

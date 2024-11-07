@@ -11,7 +11,7 @@ import java.util.LinkedList;
 
 public class Preposicoes extends LinkedList<String> {
 
-    static private Logger logger = LoggerFactory.getLogger(Preposicoes.class);
+    static private final Logger logger = LoggerFactory.getLogger(Preposicoes.class);
 
     public Preposicoes() {
         carregaArquivo();

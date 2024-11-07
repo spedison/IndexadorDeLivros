@@ -46,6 +46,15 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'com.github.javafaker:javafaker:1.0.2'
 
+    implementation 'org.apache.lucene:lucene-core:10.0.0'
+    implementation 'org.apache.lucene:lucene-analysis-common:10.0.0'
+    implementation 'org.apache.lucene:lucene-queryparser:10.0.0'
+    implementation 'org.apache.lucene:lucene-highlighter:10.0.0'
+
+    implementation "org.deeplearning4j:deeplearning4j-nlp:1.0.0-M2.1"       // DL4J NLP para embeddings de texto
+    implementation "org.nd4j:nd4j-native-platform:1.0.0-M2.1"              // ND4J para operações vetoriais
+    implementation "org.deeplearning4j:deeplearning4j-modelimport:1.0.0-M2.1" // Se precisar carregar modelos externos
+
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
@@ -65,6 +74,18 @@ application {
 }
 
 def libsDir = file(layout.buildDirectory.file("libs"))
+
+// Desabilitar distTar e distZip
+tasks.named('distTar') {
+    enabled = false
+}
+
+tasks.named('distZip') {
+    enabled = false
+}
+//tasks.getByName<Tar>("distTar").archiveName = "${project.name}.tar"
+
+
 
 tasks.register('copyDependencies', Copy) {
     dependsOn(build)
@@ -149,3 +170,37 @@ tasks.register("defaultTask"){
 }
 
 defaultTasks "defaultTask"
+
+task indexaLucene(type: JavaExec) {
+    // Definindo a classe principal do seu programa
+    mainClass = 'br.com.spedison.Main' // Substitua com o nome da sua classe principal
+
+    // Configurando o classpath do projeto (necessário para encontrar classes e dependências)
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Argumentos para o programa
+    args '-il', './idx' // Substitua pelos argumentos desejados
+
+    // Argumentos para a JVM
+    jvmArgs '-Xmx2g', '-DpropertyName=propertyValue', '--enable-native-access=ALL-UNNAMED' // Exemplo: define o máximo de memória e uma propriedade customizada
+
+    // (Opcional) Defina o diretório de trabalho, caso seja necessário
+    workingDir = project.projectDir // Substitua pelo diretório desejado ou remova se não precisar
+}
+
+task indexaIdx(type: JavaExec) {
+    // Definindo a classe principal do seu programa
+    mainClass = 'br.com.spedison.Main' // Substitua com o nome da sua classe principal
+
+    // Configurando o classpath do projeto (necessário para encontrar classes e dependências)
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Argumentos para o programa
+    args '-ckd', './idx'
+
+    // Argumentos para a JVM
+    jvmArgs '-Xmx2g', '-DpropertyName=propertyValue', '--enable-native-access=ALL-UNNAMED'
+
+    // (Opcional) Defina o diretório de trabalho, caso seja necessário
+    workingDir = project.projectDir // Substitua pelo diretório desejado ou remova se não precisar
+}

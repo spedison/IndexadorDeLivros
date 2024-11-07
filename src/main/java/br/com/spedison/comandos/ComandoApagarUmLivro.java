@@ -13,18 +13,21 @@ public class ComandoApagarUmLivro implements ComandoInterface {
     @Override
     public void execute(String[] args) {
 
-        Conexoes conexoes = new Conexoes();
-        ProcessaLivro procLivro = new ProcessaLivro(conexoes, args[1]);
+        try (Conexoes conexoes = new Conexoes()) {
 
-        Livro livro = procLivro.getLivro();
-        if (livro == null) {
-            log.error("Livro não encontrado para apagar : %s".format(args[1]));
+            ProcessaLivro procLivro = new ProcessaLivro(conexoes, args[1]);
+
+            Livro livro = procLivro.getLivro();
+            if (livro == null) {
+                log.error(String.format(args[1]));
+            }
+
+            procLivro.apagaLivro();
+            log.info(String.format(args[1]));
+
+        } catch (Exception e) {
+            log.error("Erro ao apagar livro: {}", e.getMessage());
         }
-
-        procLivro.apagaLivro();
-        log.info("Livro apagado com sucesso : %s".format(args[1]));
-
-        conexoes.terminaConexao();
     }
 
     @Override

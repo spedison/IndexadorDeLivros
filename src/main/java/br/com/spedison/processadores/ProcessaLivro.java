@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ProcessaLivro {
 
-    private Conexoes conexoes;
+    private final Conexoes conexoes;
     private Livro livro;
 
     public ProcessaLivro(Conexoes conexoes, String caminhoLivro) {

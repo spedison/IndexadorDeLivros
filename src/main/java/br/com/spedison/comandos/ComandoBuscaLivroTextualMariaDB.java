@@ -32,7 +32,7 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
             }
             return null;
         }
-    };
+    }
 
     private void mostraUmRegistro(String busca, PaginaComLivro pagina) {
         System.out.println("\nBusca: [[" + busca + "]]  - Nome arquivo : " + pagina.getCaminhoArquivo());
@@ -74,9 +74,8 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
                     .limit(quantidadeRegistro)
                     .forEach(mostraPagina);
             long fim = System.currentTimeMillis();
-            System.out.println("Foram encontrados %d registros\nO tempo gasto para a consulta foi %d msec"
-                    .formatted(paginas.size(),
-                            fim - inicio));
+            System.out.printf("Foram encontrados %d registros\nO tempo gasto para a consulta foi %d msec%n", paginas.size(),
+                    fim - inicio);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

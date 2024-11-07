@@ -19,31 +19,34 @@ public class ComandoPessoaFake implements ComandoInterface {
         Long quantidadeRegistros = Long.parseLong(args[1]) * 1_000_000;
         Faker faker = new Faker(Locale.of("pt", "BR"));
         final Random random = new Random();
-        Conexoes conexoes = new Conexoes();
-        conexoes.beginTransaction();
+        try(Conexoes conexoes = new Conexoes()) {
+            conexoes.beginTransaction();
 
-        LongStream
-                .range(0, quantidadeRegistros)
-                .forEach(i ->
-                {
-                    PessoaFake pessoaFake = new PessoaFake();
-                    pessoaFake.setEndereco(faker.address().streetAddress() + "," + faker.address().buildingNumber());
-                    pessoaFake.setIdade(faker.number().numberBetween(1, 103));
-                    boolean mn = random.nextDouble() >= .5;
-                    pessoaFake.setNome(
-                            faker.name().fullName() + " " + (mn ? faker.name().fullName().split(" ")[1] + " " : "") + faker.name().lastName());
+            LongStream
+                    .range(0, quantidadeRegistros)
+                    .forEach(i ->
+                    {
+                        PessoaFake pessoaFake = new PessoaFake();
+                        pessoaFake.setEndereco(faker.address().streetAddress() + "," + faker.address().buildingNumber());
+                        pessoaFake.setIdade(faker.number().numberBetween(1, 103));
+                        boolean mn = random.nextDouble() >= .5;
+                        pessoaFake.setNome(
+                                faker.name().fullName() + " " + (mn ? faker.name().fullName().split(" ")[1] + " " : "") + faker.name().lastName());
 
-                    conexoes.grava(pessoaFake);
+                        conexoes.grava(pessoaFake);
 
-                    if (i % 10_003L == 0) {
-                        conexoes.commitTransaction();
-                        conexoes.beginTransaction();
-                        log.info("Commitado " + i);
-                    }
-                });
+                        if (i % 10_003L == 0) {
+                            conexoes.commitTransaction();
+                            conexoes.beginTransaction();
+                            log.info("Commitado " + i);
+                        }
+                    });
 
-        conexoes.commitTransaction();
-        conexoes.terminaConexao();
+            conexoes.commitTransaction();
+        }catch(Exception e ){
+            log.error("Erro ao gerar pessoas fakes", e);
+            e.printStackTrace();
+        }
     }
 
     @Override

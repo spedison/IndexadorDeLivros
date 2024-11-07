@@ -6,6 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 
 public class Main {
@@ -25,7 +28,9 @@ public class Main {
                         new ComandoPessoaFake(),
                         new ComandoBuscaLivroComLike(),
                         new ComandoBuscaLivroTextualMariaDB(),
-                        new ComandoBuscaPalavrasComIndiceReverso()
+                        new ComandoBuscaPalavrasComIndiceReverso(),
+                        new ComandoBuscaLucene(),
+                        new ComandoIndexaLucene()
                 );
 
         if (args.length == 0){
@@ -34,11 +39,15 @@ public class Main {
         }
 
         logger.info("Executando o comando");
+
+        Predicate<ComandoInterface> aceitaComando = (ci) -> ci.aceitoComando(args);
+        Consumer<ComandoInterface> executaComando = (ci) -> ci.execute(args);
+
         comandos
                 .stream()
-                .filter(c -> c.aceitoComando(args))
+                .filter(aceitaComando)
                 .limit(1)
-                .forEach(c -> c.execute(args));
+                .forEach(executaComando);
 
         Conexoes.terminaConexoes();
     }

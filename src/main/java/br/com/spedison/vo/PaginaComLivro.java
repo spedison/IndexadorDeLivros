@@ -1,16 +1,27 @@
 package br.com.spedison.vo;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class PaginaComLivro {
     private Integer idPagina;
-    private int numeroPagina;
+    private Integer numeroPagina;
     private String conteudo;
     private String caminhoArquivo;
+
+    public PaginaComLivro() {
+    }
+
+    public PaginaComLivro(Integer idPagina, Integer numeroPagina, String conteudo, String caminhoArquivo) {
+        this.idPagina = idPagina;
+        this.numeroPagina = numeroPagina;
+        this.conteudo = conteudo;
+        this.caminhoArquivo = caminhoArquivo;
+    }
+
+    public String leIdPaginaStr() {
+        return "%d".formatted(idPagina);
+    }
 }
