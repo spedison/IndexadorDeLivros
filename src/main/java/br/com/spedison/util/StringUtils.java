@@ -2,8 +2,10 @@ package br.com.spedison.util;
 
 import br.com.spedison.config.Preposicoes;
 
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -12,10 +14,17 @@ public class StringUtils {
     static final Preposicoes preposicoes = new Preposicoes();
 
     public static String[] toToken(String s) {
-        String expr = "'\\\"\\{\\}\\[\\]\\\\/*.:,?!&-_=+\\(\\)";
+        // Caracteres não imprimíveis comuns serão removidos.
+        s = s.replaceAll("[^\\p{L}\\p{N}\\s!@#\\$%\\^&*()_+\\-=\\[\\]{}|;:'\",.<>?/\\\\~`]", " ");
+
+        String expr = "'\\\"\\{\\}\\[\\]\\\\/*?!&=+\\(\\)";
         String repl = org.apache.commons.lang3.StringUtils.repeat(' ', expr.length());
-        //System.out.println("Antes  : " + s);
+
+        //Fiz isso para preservar números, e-mails e sites.
         s = org.apache.commons.lang3.StringUtils.replaceChars(s, expr, repl);
+        s = s.replaceAll("([^\\p{L}\\d])([.:_,-])([^\\p{L}\\d])","$1 $3");
+        s = s.replaceAll("([\\p{L}\\d])([.:_,-])([^\\p{L}\\d])","$1 $3");
+        s = s.replaceAll("([^\\p{L}\\d])([.:_,-])([\\p{L}\\d])","$1 $3");
         //System.out.println("Depois : " + s);
         return s.split("[ \t]+");
     }
@@ -41,26 +50,79 @@ public class StringUtils {
                     .toArray(String[]::new);
     }
 
-    public static boolean uneLinhas(String linha1, String linha2, StringBuffer resultado) {
-        linha1 = linha1.trim();
-        linha2 = linha2.trim();
+    public static String unelinhasAjustandoPalavraQuebradas(String linhaprocessada) {
 
-        if (linha1.endsWith("-") || linha1.endsWith("_")) {
+        StringBuffer ret = new StringBuffer();
+        String[] linhas = linhaprocessada.split("\n");
+
+        for (String linha : linhas) {
+
+            // Pula as linhas em branco
+            if (linha.isBlank())
+                continue;
+
+            unelinhasAjustandoPalavraQuebradas(linha.trim(), ret);
+        }
+        return ret.toString();
+    }
+
+    public static void unelinhasAjustandoPalavraQuebradas(String linhaprocessada, StringBuffer resultado) {
+        linhaprocessada = linhaprocessada.trim();
+
+        if (resultado.isEmpty()) {
+            resultado.append(linhaprocessada);
+            return;
+        }
+
+        String ultimoCaracter = resultado.substring(resultado.length() - 1, resultado.length());
+
+        if (ultimoCaracter.equals("-") || ultimoCaracter.equals("_")) {
             //Apaga o ultimo caracter.
             resultado.delete(resultado.length() - 1, resultado.length());
-            resultado.append(linha2);
-            return true;
+        } else {
+            resultado.append("\n");
         }
 
-        if (linha1.endsWith(",") ||
-                linha1.endsWith(";") ||
-                linha1.endsWith(":")||
-                preposicoes.linhaTerminaComPreposicao(linha1)) {
-            resultado.append(" ");
-            resultado.append(linha2);
-            return true;
-        }
-
-        return false;
+        resultado.append(linhaprocessada);
     }
+
+    // Define o formato brasileiro
+    static private NumberFormat formatter = NumberFormat.getInstance(Locale.of("pt", "BR"));
+
+    public static String formataNumero(Long longValue) {
+        return formatter.format(longValue);
+    }
+
+    public static String formataNumero(Integer intValue) {
+        return formatter.format(intValue);
+    }
+
+    public static String[] splitComLimite(String str, String regex, int numMaxTokens) {
+        return org.apache.commons.lang3.StringUtils.split(str, regex, numMaxTokens);
+    }
+
+    public static String getRegExpPontuacao() {
+        return "[\\,\\.\\?\\!\\;\\ ]";
+    }
+
+    public static String trimNasLinhas(String linhas) {
+        return trimNasLinhas(linhas,false);
+    }
+
+    public static String trimNasLinhas(String linhas, boolean removeLinhasEmBranco) {
+
+        Predicate<String> filtro = (str) ->
+                removeLinhasEmBranco ? !str.trim().isBlank() : true;
+
+        return
+                org.apache.commons.lang3.StringUtils
+                        .joinWith("\n",
+                                Arrays
+                                        .stream(linhas.split("\n"))
+                                        .map(String::trim)
+                                        .filter(filtro)
+                                        .toArray());
+    }
+
+
 }

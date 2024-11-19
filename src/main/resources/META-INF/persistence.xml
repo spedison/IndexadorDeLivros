@@ -8,6 +8,7 @@
         <class>br.com.spedison.vo.FrequenciaPalavra</class>
         <class>br.com.spedison.vo.Pagina</class>
         <class>br.com.spedison.vo.Palavra</class>
+        <class>br.com.spedison.vo.PalavraLemanizada</class>
         <class>br.com.spedison.vo.Paragrafo</class>
         <class>br.com.spedison.vo.PessoaFake</class>
         <properties>
@@ -17,8 +18,8 @@
             <property name="jakarta.persistence.jdbc.password" value="123456"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
 
-            <property name="hibernate.show_sql" value="true"/>
-            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="false"/>
             <property name="hibernate.generate_statistics" value="false"/>
 
             <property name="hibernate.hikari.minimumIdle" value="2"/>

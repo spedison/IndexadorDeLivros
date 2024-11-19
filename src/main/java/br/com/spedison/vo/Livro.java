@@ -26,6 +26,9 @@ public class Livro {
     private Instant dataHoraFinal;
     private Long tempoGastoSegundos;
 
-    @OneToMany(mappedBy = "livro", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "livro",
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true)
     private List<Pagina> paginas;
 }

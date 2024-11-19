@@ -62,6 +62,21 @@ public class ProcessaLivro {
         return livro;
     }
 
+    public void atualizaHorarioProcessamento(){
+        conexoes.beginTransaction();
+        conexoes
+                .getEntityManager()
+                .createQuery("""
+                        update Livro l
+                        set l.dataHoraFinal = :dataHoraFinal
+                        where l = :livro
+                        """)
+                .setParameter("dataHoraFinal", Instant.now())
+                .setParameter("livro", livro)
+                .executeUpdate();
+        conexoes.commitTransaction();
+    }
+
     public Livro getLivro() {
         return livro;
     }
@@ -106,5 +121,15 @@ public class ProcessaLivro {
                 .setParameter("livroAtual", livro)
                 .executeUpdate();*/
         conexoes.commitTransaction();
+    }
+
+    public List<Livro> getLivros() {
+        return
+                conexoes
+                        .getEntityManager()
+                        .createQuery("""
+                                            select l from Livro l
+                                            """, Livro.class)
+                        .getResultList();
     }
 }

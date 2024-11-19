@@ -9,15 +9,17 @@ public class PaginaComLivro {
     private Integer idPagina;
     private Integer numeroPagina;
     private String conteudo;
+    private String conteudoOriginal;
     private String caminhoArquivo;
 
     public PaginaComLivro() {
     }
 
-    public PaginaComLivro(Integer idPagina, Integer numeroPagina, String conteudo, String caminhoArquivo) {
+    public PaginaComLivro(Integer idPagina, Integer numeroPagina, String conteudo, String conteudoOriginal, String caminhoArquivo) {
         this.idPagina = idPagina;
         this.numeroPagina = numeroPagina;
         this.conteudo = conteudo;
+        this.conteudoOriginal = conteudoOriginal;
         this.caminhoArquivo = caminhoArquivo;
     }
 

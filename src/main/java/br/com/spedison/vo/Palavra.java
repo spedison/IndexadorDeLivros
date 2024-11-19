@@ -30,6 +30,11 @@ public class Palavra {
     @Column(name = "posicao_palavra_paragrafo")
     private int posicaoPalavraParagrafo;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")  // Define a coluna como um texto longo
     private String conteudo;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")  // Define a coluna como um texto longo
     private String conteudoOriginal;
 }

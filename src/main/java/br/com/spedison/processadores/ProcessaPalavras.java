@@ -24,7 +24,7 @@ public class ProcessaPalavras {
 
     public void apagaPalavrasDoLivro() {
         Livro livro = livroAtual;
-        conexoes.beginTransaction();
+        //conexoes.beginTransaction();
         conexoes.getEntityManager().createQuery(
                         """
                                     delete from Palavra p
@@ -32,7 +32,7 @@ public class ProcessaPalavras {
                                 """)
                 .setParameter("idLivro", livro.getIdLivro())
                 .executeUpdate();
-        conexoes.commitTransaction();
+        //conexoes.commitTransaction();
     }
 
     public void processaPalavras() {

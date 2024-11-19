@@ -27,6 +27,10 @@ public class Pagina {
     @Column(columnDefinition = "TEXT")
     private String conteudo;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String conteudoOriginal;
+
     @OneToMany(mappedBy = "pagina", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Paragrafo> paragrafos;
 }

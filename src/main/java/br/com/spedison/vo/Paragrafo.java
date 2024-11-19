@@ -27,6 +27,10 @@ public class Paragrafo {
     @Column(columnDefinition = "TEXT")
     private String conteudo;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String conteudoLematizado;
+
     private int posicaoParagrafo;
 
     @OneToMany(mappedBy = "paragrafo" , cascade = CascadeType.REMOVE, orphanRemoval = true)
