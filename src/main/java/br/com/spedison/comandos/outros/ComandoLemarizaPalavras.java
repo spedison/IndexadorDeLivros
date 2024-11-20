@@ -26,7 +26,7 @@ public class ComandoLemarizaPalavras implements ComandoInterface {
     public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
                 Comando para lemmatizar palavras: -lematize <frase>
-                Exemplo: java -jar %s -lemaPalavra "programar no fim de semana é interessante."
+                Exemplo: java -jar %s -lematize "programar no fim de semana é interessante."
                 """.formatted(SystemUtils.getJarUsado()));
     }
 
@@ -36,9 +36,4 @@ public class ComandoLemarizaPalavras implements ComandoInterface {
                 args[0].equalsIgnoreCase("-lematize") ||
                         args[0].equalsIgnoreCase("-l"));
     }
-
-//        public static void main (String[]args){
-//            ComandoLemarizaPalavras comando = new ComandoLemarizaPalavras();
-//            comando.execute(new String[]{"","O céu a terra e a lua são partes do universo o qual lutamos para entender e além de ter grande admiração."});
-//        }
 }

@@ -1,0 +1,14 @@
+# Busca pessoas usando o banco de dados Lucene.
+-buscar-lucene-pessoa
+
+#Local do banco de dados.
+/mnt/dados/git/IndexaLivros/idx_pessoas_fake_lucene
+
+# Busca nome que contenham joão e lemos
+joão batista NOT paes NOT luca NOT guilherme
+
+# Com uma distância máxima de 5 palavras
+5
+
+# Lista somente os 30 primeiros.
+30

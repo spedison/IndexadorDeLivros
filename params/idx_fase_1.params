@@ -1,0 +1,6 @@
+# Parâmetros usados para carregar as referências dos
+# dados dos pdfs para o banco de dados MariaDB
+
+-idx
+-f1
+/mnt/dados/dados_testes/livros_para_indexar

@@ -1,14 +1,11 @@
-package br.com.spedison.comandos.buscas.mariadb;
+package br.com.spedison.comandos.buscas.mariadb.livro;
 
 import br.com.spedison.comandos.ComandoInterface;
 import br.com.spedison.processadores.Conexoes;
 import br.com.spedison.util.SystemUtils;
-import br.com.spedison.vo.Livro;
-import br.com.spedison.vo.Pagina;
 import br.com.spedison.vo.PaginaComLivro;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -34,10 +31,10 @@ public class ComandoBuscaLivroComRegExp implements ComandoInterface {
             List<PaginaComLivro> paginas = conexoes
                     .getEntityManager()
                     .createNativeQuery("""
-                                     select 
-                                        p.idPagina, p.numeroPagina,
-                                        p.conteudo, p.conteudoOriginal,
-                                        l.caminhoArquivo
+                                    select 
+                                      p.idPagina, p.numeroPagina,
+                                      p.conteudo, p.conteudoOriginal,
+                                      l.caminhoArquivo
                                     from
                                       tb_pagina p
                                       inner join tb_livro l on (p.livro_id_Livro = l.id_Livro)

@@ -21,9 +21,10 @@ public class ComandoIndexarFase1CarregarPDF implements ComandoInterface {
     private void processaUmLivro(String nomeArquivoPDF) {
 
         try (Conexoes conexoes = new Conexoes()) {
-
+            conexoes.beginTransaction();
             ProcessaLivro processaLivro = new ProcessaLivro(conexoes, nomeArquivoPDF);
             Livro livro = processaLivro.adicionaOuAtualizaLivro(nomeArquivoPDF);
+            conexoes.commitTransaction();
 
             // Esse livro já foi processado ?
             if (!livro.getPaginas().isEmpty()) {

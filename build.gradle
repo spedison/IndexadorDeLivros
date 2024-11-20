@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 plugins {
     id 'java'
     id 'application'
@@ -91,8 +93,6 @@ tasks.named('distZip') {
 }
 //tasks.getByName<Tar>("distTar").archiveName = "${project.name}.tar"
 
-
-
 tasks.register('copyDependencies', Copy) {
     dependsOn(build)
     from configurations.runtimeClasspath
@@ -177,6 +177,367 @@ tasks.register("defaultTask"){
 
 defaultTasks "defaultTask"
 
+// Tarefas de indexação da fase 1 a fase 5
+
+// Função para ler os parâmetros de um arquivo
+def loadArgsFromFile(String filePath) {
+    def file = Paths.get(projectDir.toString(), "params", filePath+".params").toFile()
+    if (!file.exists()) {
+        println("Arquivo %s não foi encontrado.".formatted(file.toString()))
+        throw new Exception("O arquivo de parâmetros não foi encontrado: $filePath")
+    }
+
+    // Lê o conteúdo do arquivo e retorna uma lista de parâmetros
+    return file
+            .readLines() // Lê todas as linhas do arquivo
+            .collect { it.trim() } // Limpa as linhas
+            .findAll {!it.startsWith("#")} // Não processa linhas comentadas.
+            .findAll { !it.isEmpty() } // Somente as linhas não vazias.
+}
+
+
+tasks.register('runIndex1', JavaExec) {
+    group = 'application'
+    description = 'Comando de indexaçao fase 1 - Carrega locais dos arquivos no banco'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "idx_fase_1"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    jvmArgs '-Xms512m', '-Xmx4g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+tasks.register('runIndex2', JavaExec) {
+    group = 'application'
+    description = 'Comando de indexaçao fase 2 - Carrega as páginas no banco'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "idx_fase_2"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    jvmArgs '-Xms512m', '-Xmx4g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+tasks.register('runIndex3', JavaExec) {
+    group = 'application'
+    description = 'Comando de indexaçao fase 3 - Processa Parágrafos e Palavras. (Usa serviço externo)'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "idx_fase_3"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    jvmArgs '-Xms512m', '-Xmx8g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+tasks.register('runIndex4', JavaExec) {
+    group = 'application'
+    description = 'Comando de indexaçao fase 3 - Processa Parágrafos e Palavras. (Usa serviço externo)'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "idx_fase_4"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    // jvmArgs '-Xms512m', '-Xmx4g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+    jvmArgs '-Xms512m', '-Xmx8g', '-DpropertyName=propertyValue', '--enable-native-access=ALL-UNNAMED'
+}
+
+tasks.register('runIndex5', JavaExec) {
+    group = 'application'
+    description = 'Comando de indexaçao fase 5 - Indexa Lucene Pessoas Fake'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "idx_fase_5"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    // jvmArgs '-Xms512m', '-Xmx16g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+    jvmArgs '-Xms512m', '-Xmx16g', '-DpropertyName=propertyValue', '--enable-native-access=ALL-UNNAMED'
+}
+
+
+// Buscas
+tasks.register('runBuscaLivroLike', JavaExec) {
+    group = 'application'
+    description = 'Comando de Buscas Usando Like no MariaDB'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "busca_mariadb_1_like_livro"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    //jvmArgs '-Xms512m', '-Xmx2g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+tasks.register('runBuscaLivroRegExp', JavaExec) {
+    group = 'application'
+    description = 'Comando de Buscas Usando Expressões Regulares no MariaDB'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "busca_mariadb_2_regexp_livro"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    //jvmArgs '-Xms512m', '-Xmx2g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+tasks.register('runBuscaLivroTextual', JavaExec) {
+    group = 'application'
+    description = 'Comando de Buscas Usando Operadores Textuais no MariaDB'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "busca_mariadb_3_textual_livro"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    //jvmArgs '-Xms512m', '-Xmx2g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+tasks.register('runBuscaPessoaFakeLike', JavaExec) {
+    group = 'application'
+    description = 'Comando de Buscas Usando Operadores Like no MariaDB'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "busca_mariadb_4_like_pessoafake"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    //jvmArgs '-Xms512m', '-Xmx2g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+
+tasks.register('runBuscaPessoaFakeTextual', JavaExec) {
+    group = 'application'
+    description = 'Comando de Buscas Usando Operadores Textuais no MariaDB'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "busca_mariadb_6_textual_pessoafake"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    //jvmArgs '-Xms512m', '-Xmx2g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+}
+
+tasks.register('runBuscaPessoaLucene', JavaExec) {
+    group = 'application'
+    description = 'Comando de Buscas Usando o Lucene'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "busca_lucene_1_pessoafake"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    //jvmArgs '-Xms512m', '-Xmx2g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+}
+
+tasks.register('runBuscaLivroLucene', JavaExec) {
+    group = 'application'
+    description = 'Comando de Buscas Usando o Lucene na base de Livros'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "busca_lucene_2_livro"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+
+    // Configuração dos parâmetros de memória
+    //jvmArgs '-Xms512m', '-Xmx2g' // Xms para definir a memória inicial, Xmx para definir a memória máxima
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+}
+
+// Outros comandos
+tasks.register('runTextoLema', JavaExec) {
+    group = 'application'
+    description = 'Comando para lemanizar o texto'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "roda_texto_lemanizado"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+}
+
+tasks.register('runTextoRadix', JavaExec) {
+    group = 'application'
+    description = 'Comando para lemanizar o texto'
+
+    // Defina a classe principal do seu projeto
+    mainClass.set(application.mainClass)
+
+    // Caminho do arquivo de onde os parâmetros serão lidos
+    def paramsFilePath = "roda_texto_radicalizar"
+
+    // Lê os parâmetros do arquivo e os define como argumentos
+    args = loadArgsFromFile(paramsFilePath)
+
+    println(args)
+
+    // Se precisar configurar o classpath, use:
+    classpath = sourceSets.main.runtimeClasspath
+
+    // Configuração do diretório de trabalho
+    workingDir = file(projectDir)
+}
+
 task indexaLucene(type: JavaExec) {
     // Definindo a classe principal do seu programa
     mainClass = 'br.com.spedison.Main' // Substitua com o nome da sua classe principal
@@ -210,3 +571,4 @@ task indexaIdx(type: JavaExec) {
     // (Opcional) Defina o diretório de trabalho, caso seja necessário
     workingDir = project.projectDir // Substitua pelo diretório desejado ou remova se não precisar
 }
+

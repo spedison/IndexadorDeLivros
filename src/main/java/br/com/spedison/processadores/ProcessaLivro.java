@@ -39,7 +39,10 @@ public class ProcessaLivro {
 
         // Achou um livro... e ele tem um hash igual (é o mesmo livro pode retornar ele mesmo)
         if (livro != null && livro.getHash().equals(hash)) {
+            // Atualiza o caminho completo, se necessário.
+            livro.setCaminhoCompletoArquivo(caminhoCompletoLivro);
             livro.setDataHoraInicial(Instant.now());
+            conexoes.grava(livro);
             return livro;
         }
 
@@ -54,10 +57,7 @@ public class ProcessaLivro {
         novoLivro.setPaginas(new LinkedList<>());
 
         // Grava no banco e retorna.
-        conexoes.beginTransaction();
         conexoes.grava(novoLivro);
-        conexoes.commitTransaction();
-
         livro = novoLivro;
         return livro;
     }

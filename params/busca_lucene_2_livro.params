@@ -1,0 +1,14 @@
+# Busca pessoas usando o banco de dados Lucene.
+-bll
+
+#Local do banco de dados.
+/mnt/dados/git/IndexaLivros/idx_livros_lucene
+
+# Busca nome que contenham joão e lemos
+java classe
+
+# Com uma distância máxima de 5 palavras
+5
+
+# Lista somente os 30 primeiros.
+30

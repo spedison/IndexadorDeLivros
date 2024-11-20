@@ -5,10 +5,12 @@ import br.com.spedison.comandos.apagar.ComandoApagarTodosLivros;
 import br.com.spedison.comandos.apagar.ComandoApagarUmLivro;
 import br.com.spedison.comandos.buscas.lucene.ComandoBuscaLivroLucene;
 import br.com.spedison.comandos.buscas.lucene.ComandoBuscaPessoaLucene;
-import br.com.spedison.comandos.buscas.mariadb.ComandoBuscaLivroComLike;
-import br.com.spedison.comandos.buscas.mariadb.ComandoBuscaLivroComRegExp;
-import br.com.spedison.comandos.buscas.mariadb.ComandoBuscaLivroTextualMariaDB;
-import br.com.spedison.comandos.buscas.mariadb.ComandoBuscaPalavrasComIndiceReverso;
+import br.com.spedison.comandos.buscas.mariadb.livro.ComandoBuscaLivroComLike;
+import br.com.spedison.comandos.buscas.mariadb.livro.ComandoBuscaLivroComRegExp;
+import br.com.spedison.comandos.buscas.mariadb.livro.ComandoBuscaLivroTextualMariaDB;
+import br.com.spedison.comandos.buscas.mariadb.livro.ComandoBuscaPalavrasComIndiceReverso;
+import br.com.spedison.comandos.buscas.mariadb.pessoa.ComandoBuscaPessoaComLike;
+import br.com.spedison.comandos.buscas.mariadb.pessoa.ComandoBuscaPessoalTextualMariaDB;
 import br.com.spedison.comandos.index.*;
 import br.com.spedison.comandos.outros.ComandoConectUsandoJDBC;
 import br.com.spedison.comandos.outros.ComandoCriaPessoaFake;
@@ -50,18 +52,29 @@ public class Main {
                         // Somente JDBC. (Conta a quantidade de registros em
                         // todas as tabelas)
                         new ComandoConectUsandoJDBC(),
+
                         // Preenche uma tabela com milhares de registros para testes.
                         new ComandoCriaPessoaFake(),
                         // Busca de Livros usando Like.
                         new ComandoBuscaLivroComLike(),
                         // Busca de Livros usando o MariaDB em modo texto booleano, extendido e por palavras soltas.
                         new ComandoBuscaLivroTextualMariaDB(),
+
+                        new ComandoBuscaPessoaComLike(),
+                        // Busca textual com a tabela de nomes.
+                        new ComandoBuscaPessoalTextualMariaDB(),
+
                         // Busca Livros com RegExp
                         new ComandoBuscaLivroComRegExp(),
                         // Busca usando banco de dados mariadb com dados quebrados por palavras.
                         new ComandoBuscaPalavrasComIndiceReverso(),
                         new ComandoBuscaPessoaLucene(),
-                        new ComandoBuscaLivroLucene()
+                        new ComandoBuscaLivroLucene(),
+
+                        new ComandoLemarizaPalavras(),
+                        new ComandoRadicalizarPalavras()
+
+
                 );
 
         if (args.length == 0){
@@ -73,11 +86,12 @@ public class Main {
 
         Predicate<ComandoInterface> aceitaComando = (ci) -> ci.aceitoComando(args);
         Consumer<ComandoInterface> executaComando = (ci) -> ci.execute(args);
-
+        Consumer<ComandoInterface> mostraClasse  = (ci) -> logger.info("Classe :: " + ci.getClass().getSimpleName());
         comandos
                 .stream()
                 .filter(aceitaComando)
                 .limit(1)
+                .peek(mostraClasse)
                 .forEach(executaComando);
 
         Conexoes.terminaConexoes();

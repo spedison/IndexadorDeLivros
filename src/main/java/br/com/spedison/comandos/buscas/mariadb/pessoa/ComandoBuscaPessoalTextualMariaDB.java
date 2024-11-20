@@ -1,9 +1,10 @@
-package br.com.spedison.comandos.buscas.mariadb;
+package br.com.spedison.comandos.buscas.mariadb.pessoa;
 
 import br.com.spedison.comandos.ComandoInterface;
 import br.com.spedison.processadores.Conexoes;
 import br.com.spedison.util.SystemUtils;
 import br.com.spedison.vo.PaginaComLivro;
+import br.com.spedison.vo.PessoaFake;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,7 +14,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 
-public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
+public class ComandoBuscaPessoalTextualMariaDB implements ComandoInterface {
 
     @Getter
     @AllArgsConstructor
@@ -35,11 +36,7 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
         }
     }
 
-    private void mostraUmRegistro(String busca, PaginaComLivro pagina) {
-        System.out.println("\nBusca: [[" + busca + "]]  - Nome arquivo : " + pagina.getCaminhoArquivo());
-        System.out.println(" Localizada na página : " + pagina.getNumeroPagina());
-        System.out.println("----Página localizada ----:\n" + pagina.getConteudo() + "\n---------------FIM PÁGINA DA BUSCA-----");
-    }
+
 
     @Override
     @SuppressWarnings("unchecked")
@@ -47,34 +44,32 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
 
         final String busca = args[1];
         final int quantidadeRegistro = Integer.parseInt(args[2]);
-        Consumer<PaginaComLivro> mostraPagina = (PaginaComLivro p) -> mostraUmRegistro(busca, p);
+        Consumer<PessoaFake> mostraPagina = (p) -> ComandoPessoaUtils.mostraUmRegistro(busca, p);
         String modoMariaDb = ModoBusca.getModoBusca(args[3]).getMariadbBusca();
 
         try (Conexoes conexoes = new Conexoes()) {
             long inicio = System.currentTimeMillis();
-            List<PaginaComLivro> paginas =
+            List<PessoaFake> paginas =
                     conexoes
                             .getEntityManager()
                             .createNativeQuery("""
-                                            select 
-                                                p.idPagina, p.numeroPagina,
-                                                p.conteudo, p.conteudoOriginal,
-                                                l.caminhoArquivo
+                                            select
+                                              id, endereco, idade, nome 
                                             from
-                                              tb_pagina p
-                                              inner join tb_livro l on (p.livro_id_Livro = l.id_Livro)
+                                              tb_pessoa_fake
                                             where
-                                              MATCH (p.conteudo) AGAINST (? %s)
+                                              MATCH (nome) AGAINST (? %s)
                                             order by
-                                              l.caminhoArquivo""".formatted(modoMariaDb),
-                                    PaginaComLivro.class)
-                            .setParameter(1, args[1])
+                                              nome""".formatted(modoMariaDb),
+                                    PessoaFake.class)
+                            .setParameter(1, modoMariaDb)
                             .setMaxResults(100_000)
                             .getResultList();
             paginas
                     .stream()
                     .limit(quantidadeRegistro)
                     .forEach(mostraPagina);
+
             long fim = System.currentTimeMillis();
             System.out.printf("Foram encontrados %d registros\nO tempo gasto para a consulta foi %d msec%n", paginas.size(),
                     fim - inicio);
@@ -86,16 +81,16 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
     @Override
     public StringBuilder showHelp(StringBuilder help) {
         return help.append("""
-                        Comando   : -busca-livro-textual ou -blt
+                        Comando   : -busca-pessoa-textual ou -bpt
                         Descrição : Busca livros com nome que contém as expressões do mariadb in boolean mode
                         Argumentos:
                                   1) Expressão usada pelo MariaDB para busca textual
                                   2) Quantidade de resultados desejados na impressão.
                                   3) Modos : Simples "S", Extendida "E" ou BinaryMode "B",
                         Exemplo   :
-                                  java -jar %s -blt "+java +class* +switch" 10 b
-                                  java -jar %s -blt "java class switch" 10 e
-                                  java -jar %s -blt "java class" 10 s
+                                  java -jar %s -bpt "+java +class* +switch" 10 b
+                                  java -jar %s -bpt "java class switch" 10 e
+                                  java -jar %s -bpt "java class" 10 s
                         """.formatted(
                         SystemUtils.getJarUsado(),
                         SystemUtils.getJarUsado(),
@@ -107,8 +102,8 @@ public class ComandoBuscaLivroTextualMariaDB implements ComandoInterface {
     @Override
     public boolean aceitoComando(String[] args) {
         return args.length == 4 &&
-                (args[0].equalsIgnoreCase("-busca-livro-textual") ||
-                        args[0].equalsIgnoreCase("-blt")) &&
+                (args[0].equalsIgnoreCase("-busca-pessoa-textual") ||
+                        args[0].equalsIgnoreCase("-bpt")) &&
                 args[2].matches("^[0-9]*$") &&
                 Objects.nonNull(ModoBusca.getModoBusca(args[3]));
     }

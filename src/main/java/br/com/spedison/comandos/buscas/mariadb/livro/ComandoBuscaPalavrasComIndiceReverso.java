@@ -1,4 +1,4 @@
-package br.com.spedison.comandos.buscas.mariadb;
+package br.com.spedison.comandos.buscas.mariadb.livro;
 
 import br.com.spedison.comandos.ComandoInterface;
 import br.com.spedison.config.Preposicoes;
