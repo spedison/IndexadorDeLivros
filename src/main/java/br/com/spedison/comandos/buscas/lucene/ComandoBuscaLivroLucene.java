@@ -1,6 +1,7 @@
 package br.com.spedison.comandos.buscas.lucene;
 
 import br.com.spedison.comandos.ComandoInterface;
+import br.com.spedison.util.StringUtils;
 import br.com.spedison.util.SystemUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -27,7 +28,7 @@ public class ComandoBuscaLivroLucene implements ComandoInterface {
     Date end;
 
 
-    private void imprimeDoc(Document doc, float score, String strDestaque){
+    private void imprimeDoc(Document doc, float score, String strDestaque) {
         System.out.printf("""           
                         >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         ID: %d  -   Score   : %.2f
@@ -57,7 +58,7 @@ public class ComandoBuscaLivroLucene implements ComandoInterface {
     @Override
     public void execute(String[] args) {
 
-        diretorioIndexador = new File(args[2]);
+        diretorioIndexador = new File(args[1]);
 
         // Apaga todos os diretorios e arquivos que estao em args[1]
         if (!diretorioIndexador.exists()) {
@@ -67,7 +68,10 @@ public class ComandoBuscaLivroLucene implements ComandoInterface {
 
         start = new Date();
         log.info("Iniciando a Busca no Lucene.");
-        buscaPaginas(args[2],Integer.parseInt(args[3]));
+        buscaPaginas(
+                args[2],
+                Integer.parseInt(args[3]),
+                Integer.parseInt(args[4]));
         end = new Date();
 
         System.out.printf("""
@@ -79,7 +83,7 @@ public class ComandoBuscaLivroLucene implements ComandoInterface {
                 (end.getTime() - start.getTime()) / 1000.0);
     }
 
-    private void buscaPaginas(String textoPagina, int distancia) {
+    private void buscaPaginas(String textoPagina, int distancia, int quantidadeLinhas) {
         try (FSDirectory directory = FSDirectory.open(diretorioIndexador.toPath());
              // Cria um DirectoryReader para ler o índice
              DirectoryReader reader = DirectoryReader.open(directory)) {
@@ -100,10 +104,10 @@ public class ComandoBuscaLivroLucene implements ComandoInterface {
              * builder.add(new TermQuery(new Term("content", "lucene")), BooleanClause.Occur.SHOULD);
              * Query query = builder.build();
              */
-            String [] palavrasBuscas = textoPagina.trim().split("[\s]");
+            String[] palavrasBuscas = textoPagina.trim().split("[\s]");
             Query query;
 
-            if (palavrasBuscas.length > 1) {
+            if (distancia != -1) {
                 query = new PhraseQuery(distancia, "conteudo", palavrasBuscas);
             } else {
                 // Configura o parser para buscar no campo "conteudo". Query simples.
@@ -124,14 +128,28 @@ public class ComandoBuscaLivroLucene implements ComandoInterface {
             SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("***", "***");
             Highlighter highlighter = new Highlighter(formatter, new QueryScorer(query));
             highlighter.setTextFragmenter(new SimpleFragmenter(250)); // Define o tamanho do fragmento exibido
-
+            int quantRegsExibidos = quantidadeLinhas;
+            int linhasExibidas = 0;
             for (ScoreDoc scoreDoc : results.scoreDocs) {
                 Document doc = searcher.storedFields().document(scoreDoc.doc);
                 @SuppressWarnings("deprecation")
                 var tokenStream = TokenSources.getAnyTokenStream(reader, scoreDoc.doc, "conteudo", analyzer);
                 String highlightedText = highlighter.getBestFragment(tokenStream, doc.get("conteudo"));
-                imprimeDoc(doc,scoreDoc.score, highlightedText);
+                imprimeDoc(doc, scoreDoc.score, highlightedText);
+                if (quantRegsExibidos-- <= 0)
+                    break;
+                linhasExibidas++;
             }
+
+            log.info("""
+                     Quantidade de registros total      : %-12s
+                     Quantidade de registros encontrados: %-12s
+                     Quantidade de registos exibidos    : %-12s
+                     """.formatted(
+                    StringUtils.formataNumero(numDocsLidos),
+                    StringUtils.formataNumero(results.totalHits.value()),
+                    StringUtils.formataNumero(linhasExibidas)
+            ));
 
         } catch (IOException e) {
             log.error("Erro ao verificar ínidice : " + e.getMessage());
@@ -152,15 +170,18 @@ public class ComandoBuscaLivroLucene implements ComandoInterface {
                             <diretório do indexador>
                             <expressão a localizar>
                             <distancia entre palavras>
-                Exemplo   : java -jar %s -buscar-lucene /caminho/do/indexador  "switch java" 5
+                            <Linhas exibias>
+                Exemplo   : java -jar %s -buscar-lucene /caminho/do/indexador  "switch java" 5 10
                 """.formatted(SystemUtils.getJarUsado()));
     }
 
     @Override
     public boolean aceitoComando(String[] args) {
-        return args.length == 4 &&
-                (args[0].equalsIgnoreCase("-buscar-lucene") ||
-                        args[0].equalsIgnoreCase("-bl")) &&
-                args[3].trim().matches("\\d+");
+        return args.length == 5 &&
+                (args[0].equalsIgnoreCase("-buscar-livro-lucene") ||
+                        args[0].equalsIgnoreCase("-bll")) &&
+                args[3].trim().matches("\\d+") &&
+                args[4].trim().matches("\\d+")
+                ;
     }
 }
